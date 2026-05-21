@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#15171c" />
+<title>nano 라이센스 관리</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #15171c; --panel: #1d2027; --text: #e5e7eb; --muted: #9ca3af;
+    --accent: #6366f1; --accent-hover: #4f46e5;
+    --success: #10b981; --error: #ef4444; --warn: #f59e0b;
+    --border: #2d3138;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    padding: 16px; background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 16px; margin: 0; }
+  .status-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--muted);
+    margin-right: 6px; vertical-align: middle;
+  }
+  .status-dot.ok { background: var(--success); }
+  .status-dot.bad { background: var(--error); }
+  .toolbar button {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); padding: 6px 10px; border-radius: 6px;
+    font-size: 12px; margin-left: 6px; cursor: pointer;
+  }
+  main { padding: 16px; max-width: 720px; margin: 0 auto; }
+  .empty {
+    padding: 48px 16px; text-align: center; color: var(--muted);
+  }
+  .order {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .order-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px;
+    border-radius: 99px; background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+  }
+  .badge.kmong { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+  .badge.lecture { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+  .order-id {
+    font-family: "SF Mono", Monaco, Consolas, monospace;
+    font-size: 14px; font-weight: 600;
+    user-select: all;
+  }
+  .meta { font-size: 13px; color: var(--muted); margin: 4px 0; line-height: 1.5; }
+  .meta strong { color: var(--text); }
+  .actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .btn {
+    flex: 1; padding: 12px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn.primary { background: var(--accent); color: white; }
+  .btn.primary:hover { background: var(--accent-hover); }
+  .btn.danger { background: transparent; border-color: var(--error); color: var(--error); }
+  .btn.danger:hover { background: rgba(239, 68, 68, 0.1); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* 토큰 입력 모달 */
+  .auth-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 100;
+  }
+  .auth-box {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px;
+    width: 100%; max-width: 360px;
+  }
+  .auth-box h2 { margin: 0 0 12px; font-size: 18px; }
+  .auth-box input {
+    width: 100%; padding: 12px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 14px; margin: 12px 0;
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 10px 16px; border-radius: 8px; font-size: 13px;
+    z-index: 200; max-width: 90%;
+  }
+  .toast.error { border-color: var(--error); }
+
+  /* 탭 */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1; padding: 12px 8px; background: transparent; border: none;
+    color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab .count {
+    display: inline-block; margin-left: 4px; padding: 1px 6px;
+    border-radius: 99px; background: var(--border); font-size: 11px;
+  }
+  .tab.active .count { background: var(--accent); color: white; }
+  .state-pill {
+    display: inline-block; font-size: 10px; padding: 1px 8px;
+    border-radius: 99px;
+  }
+  .state-pill.trial { background: rgba(245, 158, 11, 0.15); color: #fcd34d; }
+  .state-pill.active { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+  .state-pill.blocked { background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
+  .state-pill.refunded { background: rgba(156, 163, 175, 0.15); color: #d1d5db; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>nano 라이센스 관리</h1>
+  <div class="toolbar">
+    <span><span id="push-dot" class="status-dot"></span><span id="push-label" style="font-size:11px;color:var(--muted)">알림 미설정</span></span>
+    <button id="enable-push">알림 켜기</button>
+    <button id="refresh">새로고침</button>
+    <button id="logout" style="border-color:var(--error);color:var(--error)">로그아웃</button>
+  </div>
+</header>
+
+<div class="tabs" id="tabs" style="max-width:720px;margin:0 auto;padding:0 16px">
+  <button class="tab active" data-tab="pending">대기 <span class="count" id="count-pending">·</span></button>
+  <button class="tab" data-tab="active">활성 <span class="count" id="count-active">·</span></button>
+  <button class="tab" data-tab="blocked">폐기 <span class="count" id="count-blocked">·</span></button>
+</div>
+
+<main id="main">
+  <div class="empty">불러오는 중...</div>
+</main>
+
+<div id="auth-overlay" class="auth-overlay" style="display:none">
+  <div class="auth-box">
+    <h2>판매자 인증</h2>
+    <div style="font-size:13px;color:var(--muted)">Deno Deploy 환경변수의 ADMIN_BEARER_TOKEN 입력</div>
+    <input id="token-input" type="password" placeholder="Bearer 토큰" autocomplete="off" />
+    <input id="api-input" type="url" placeholder="https://nano-license-api.deno.dev" />
+    <button class="btn primary" id="login-btn" style="margin-top:12px">로그인</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
