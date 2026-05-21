@@ -21,6 +21,29 @@ function loadConfig() {
   } catch {}
 }
 
+/**
+ * URL 쿼리파라미터로 자동 로그인.
+ * 예: https://.../nano-admin/?token=ABC123&api=https://x.deno.net
+ *
+ * 보안:
+ * - URL은 브라우저 히스토리/캐시에 남으므로, 파라미터를 발견하면 즉시
+ *   localStorage에 저장하고 history.replaceState로 URL을 정리 (토큰 잔존 방지).
+ * - 휴대폰 화면 캡처/공유 시 토큰이 노출되지 않도록 사용 후엔 URL 깨끗.
+ */
+function loadFromQuery() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
+  const api = params.get('api') || params.get('apiBase');
+  if (!token && !api) return false;
+  if (token) state.token = token;
+  if (api) state.apiBase = api.replace(/\/$/, '');
+  // URL 즉시 정리 - history에 토큰이 안 남도록.
+  try {
+    history.replaceState({}, '', location.pathname);
+  } catch {}
+  return Boolean(token && state.apiBase);
+}
+
 function saveConfig() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     apiBase: state.apiBase,
@@ -453,8 +476,30 @@ function toast(msg, isError = false) {
 
 // 부트
 loadConfig();
-if (!state.token || !state.apiBase) {
+const fromQuery = loadFromQuery();
+if (fromQuery) {
+  // 쿼리로 받은 값 즉시 검증 후 저장
+  autoLoginFromQuery();
+} else if (!state.token || !state.apiBase) {
   showAuthOverlay();
 } else {
   refreshAll();
+}
+
+async function autoLoginFromQuery() {
+  try {
+    // VAPID 키 조회 (인증 검증 + 로그인 확정)
+    const vapidRes = await fetch(state.apiBase + '/admin/vapid-public');
+    const vapidData = await vapidRes.json();
+    if (vapidData.ok) state.vapidPublicKey = vapidData.vapidPublicKey;
+    // 토큰 유효성 확인
+    await api('/admin/pending');
+    saveConfig();
+    hideAuthOverlay();
+    toast('자동 로그인 완료');
+    await refreshAll();
+  } catch (e) {
+    toast('자동 로그인 실패: ' + e.message, true);
+    showAuthOverlay();
+  }
 }
