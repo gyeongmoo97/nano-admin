@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#15171c" />
 <title>nano 라이센스 관리</title>
 <link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <style>
   :root {
@@ -140,6 +141,7 @@
   <div class="toolbar">
     <span><span id="push-dot" class="status-dot"></span><span id="push-label" style="font-size:11px;color:var(--muted)">알림 미설정</span></span>
     <button id="enable-push">알림 켜기</button>
+    <button id="backup-csv" title="라이센스 CSV를 이 기기에 저장 (마스킹 없음)">📥 백업</button>
     <button id="refresh">새로고침</button>
     <button id="logout" style="border-color:var(--error);color:var(--error)">로그아웃</button>
   </div>
@@ -157,11 +159,32 @@
 
 <div id="auth-overlay" class="auth-overlay" style="display:none">
   <div class="auth-box">
-    <h2>판매자 인증</h2>
-    <div style="font-size:13px;color:var(--muted)">Deno Deploy 환경변수의 ADMIN_BEARER_TOKEN 입력</div>
-    <input id="token-input" type="password" placeholder="Bearer 토큰" autocomplete="off" />
-    <input id="api-input" type="url" placeholder="https://nano-license-api.deno.dev" />
-    <button class="btn primary" id="login-btn" style="margin-top:12px">로그인</button>
+    <!-- Step 1: Bearer 토큰 입력 -->
+    <div id="auth-step-token">
+      <h2>판매자 인증 — 1단계</h2>
+      <div style="font-size:13px;color:var(--muted)">Deno Deploy 환경변수의 ADMIN_BEARER_TOKEN 입력</div>
+      <input id="token-input" type="password" placeholder="Bearer 토큰" autocomplete="off" />
+      <input id="api-input" type="url" placeholder="https://nano-license-api.deno.dev" />
+      <button class="btn primary" id="login-btn" style="margin-top:12px">다음</button>
+    </div>
+
+    <!-- Step 2: PIN 입력 (토큰 검증 통과 후) -->
+    <div id="auth-step-pin" style="display:none">
+      <h2>판매자 인증 — 2단계</h2>
+      <div style="font-size:13px;color:var(--muted)">
+        6자리 PIN 입력. 토큰만으로는 admin API 사용 불가.<br/>
+        <strong>5회 실패 시 1시간 차단됩니다.</strong>
+      </div>
+      <input id="pin-input" type="password" placeholder="6자리 숫자 PIN"
+             inputmode="numeric" pattern="[0-9]*" maxlength="6"
+             autocomplete="off" />
+      <button class="btn primary" id="pin-submit-btn" style="margin-top:12px">확인</button>
+      <button class="btn" id="pin-back-btn"
+              style="margin-top:8px;background:transparent;border:1px solid var(--border);color:var(--muted)">
+        ← 토큰 다시 입력
+      </button>
+      <div id="pin-result" style="margin-top:12px;font-size:13px"></div>
+    </div>
   </div>
 </div>
 

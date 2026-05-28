@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  나노뮤지엄 — Simplified Favicon (single-glass, NM prominent)
+  16~32px 가독을 위해 3-panel depth 제거, 글래스 1장만 + NM 더 크게
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" shape-rendering="geometricPrecision">
+  <defs>
+    <radialGradient id="bg" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0%" stop-color="#1c2348"/>
+      <stop offset="65%" stop-color="#0a0f24"/>
+      <stop offset="100%" stop-color="#030514"/>
+    </radialGradient>
+    <radialGradient id="aurora" cx="0.5" cy="0.45" r="0.5">
+      <stop offset="0%" stop-color="#c084ff" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#5b7cff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#5b7cff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.14"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="210" fill="url(#aurora)"/>
+  <rect x="64" y="128" width="384" height="256" rx="48" fill="url(#plate)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3"/>
+  <!-- NM larger, centered -->
+  <g fill="#ffffff">
+    <!-- N -->
+    <path d="M 108 184
+             L 144 184
+             L 218 296
+             L 218 184
+             L 250 184
+             L 250 328
+             L 214 328
+             L 140 216
+             L 140 328
+             L 108 328 Z"/>
+    <!-- M -->
+    <path d="M 268 184
+             L 302 184
+             L 340 254
+             L 378 184
+             L 412 184
+             L 412 328
+             L 384 328
+             L 384 244
+             L 354 300
+             L 326 300
+             L 296 244
+             L 296 328
+             L 268 328 Z"/>
+  </g>
+  <rect x="80" y="140" width="352" height="6" rx="3" fill="#ffffff" opacity="0.45"/>
+</svg>
