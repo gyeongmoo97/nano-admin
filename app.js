@@ -599,8 +599,11 @@ async function unblockLicense(licenseKey, el) {
  * 파일명은 서버 Content-Disposition을 우선, 없으면 클라이언트에서 생성.
  */
 async function downloadKeysCsv({ manual }) {
+  // keys.csv는 PII 포함이라 서버에서 PIN session 필수 — 세션 헤더 동봉.
+  const csvHeaders = { Authorization: `Bearer ${state.token}` };
+  if (state.sessionId) csvHeaders['X-Admin-Session'] = state.sessionId;
   const res = await fetch(state.apiBase + '/admin/keys.csv', {
-    headers: { Authorization: `Bearer ${state.token}` },
+    headers: csvHeaders,
   });
   if (!res.ok) {
     if (manual) toast(`CSV 다운로드 실패: HTTP ${res.status}`, true);
